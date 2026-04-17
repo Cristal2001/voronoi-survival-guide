@@ -113,3 +113,45 @@ Canvas
 - `Escape` → пауза toggle
 - `C` → крафт toggle
 - `F11` → экран проигрыша
+
+---
+
+## 🔊 Готовые аудио файлы в проекте
+
+**Путь:** `Assets/Resources/Audio/SFX/`
+
+Загружать в коде через:
+```csharp
+AudioClip clip = Resources.Load<AudioClip>("Audio/SFX/sfx_build");
+```
+
+| Файл | Полное имя | Когда использовать |
+|------|-----------|-------------------|
+| `sfx_build` | sfx_build | Размещение постройки (обязателен по заданию) |
+| `sfx_craft` | sfx_craft | Успешный крафт предмета |
+| `sfx_hit_1` | sfx_hit_1 | Удар по врагу (вариант 1) |
+| `sfx_hit_2` | sfx_hit_2 | Удар по врагу (вариант 2) |
+| `sfx_hit_3` | sfx_hit_3 | Удар по врагу (вариант 3) |
+| `sfx_hit_4` | sfx_hit_4 | Удар по врагу (вариант 4) |
+| `sfx_pop` | sfx_pop | Подбор предмета / всплывающее уведомление |
+| `sfx_ui` | sfx_ui | Клик по кнопке UI |
+| `sfx_woosh` | sfx_woosh | Свист — бросок копья / выстрел из лука |
+
+> ⚠️ **Звук проигрыша и звук строительства — обязательны по критериям оценки!**
+> Используй `sfx_build` для строительства. Для проигрыша подойдёт любой резкий звук.
+
+**Пример подключения звука в UIManager:**
+```csharp
+[SerializeField] private AudioClip gameOverClip; // перетащить sfx_pop или другой
+private AudioSource _audio;
+
+void Awake() {
+    _audio = GetComponent<AudioSource>(); // добавить AudioSource на UIManager
+}
+
+public void ShowGameOver() {
+    gameOverPanel.SetActive(true);
+    Time.timeScale = 0f;
+    _audio.PlayOneShot(gameOverClip);    // воспроизвести звук проигрыша
+}
+```
