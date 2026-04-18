@@ -232,3 +232,35 @@ public class CameraZoom : MonoBehaviour
     }
 }
 ```
+
+**Подбор предмета кликом — `UI/InventoryRaycast.cs`:**
+> Вешать на каждый **предмет в мире** (3D-объект который можно подобрать)
+> В инспекторе указать: `_object` — кнопка слота инвентаря, `_objImage` — иконка предмета
+
+```csharp
+using UnityEngine;
+using UnityEngine.UI;
+
+public class InventoryRaycast : MonoBehaviour
+{
+    [SerializeField] private Button _object;   // кнопка слота инвентаря (выключена пока предмет лежит)
+    [SerializeField] private Image  _objImage; // иконка предмета в инвентаре
+
+    void Update()
+    {
+        // Пускаем луч из камеры через курсор мыши в мир
+        Ray        ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+
+        // Условие: луч попал в этот объект И игрок нажал ЛКМ
+        if (Physics.Raycast(ray, out hit, 999f)
+            && hit.collider.gameObject == gameObject
+            && Input.GetMouseButtonDown(0))
+        {
+            Destroy(gameObject);        // удаляем предмет из мира
+            _object.enabled   = true;  // включаем кнопку слота в инвентаре
+            _objImage.enabled = true;  // показываем иконку предмета
+        }
+    }
+}
+```
