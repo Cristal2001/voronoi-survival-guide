@@ -229,6 +229,21 @@ public class AnimalAI : MonoBehaviour
 
 > ⚠️ На объекте Player должен быть тег **"Player"** (Inspector → Tag → Player)
 
+**Просто идёт на игрока — `EnemyFollow.cs`:**
+> Самый простой вариант. Вешать на животное, больше ничего не нужно.
+
+```csharp
+using UnityEngine;
+public class EnemyFollow : MonoBehaviour
+{
+    [SerializeField] private float _speed = 3f;
+    private Transform _player;
+
+    void Start()  => _player = GameObject.FindGameObjectWithTag("Player").transform;
+    void Update() => transform.position = Vector3.MoveTowards(transform.position, _player.position, _speed * Time.deltaTime);
+}
+```
+
 ---
 
 **Нейтральные (убегают при атаке на 10м):**
