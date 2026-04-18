@@ -206,3 +206,29 @@ if (Input.GetKey(KeyCode.Q)) _yaw -= rotSpeed * Time.deltaTime;
 if (Input.GetKey(KeyCode.E)) _yaw += rotSpeed * Time.deltaTime;
 Quaternion rotation = Quaternion.Euler(0, _yaw, 0);
 ```
+
+**Зум камеры колесом мыши — `UI/CameraZoom.cs`:**
+> Вешать на объект **Main Camera**
+
+```csharp
+using UnityEngine;
+public class CameraZoom : MonoBehaviour
+{
+    private Camera _camera;
+    [SerializeField] private float zoomSpeed = 10f; // скорость зума
+    [SerializeField] private float minZoom   = 20f; // минимальный угол обзора
+    [SerializeField] private float maxZoom   = 60f; // максимальный угол обзора
+
+    void Start()  => _camera = GetComponent<Camera>();
+
+    void Update()
+    {
+        float scroll = Input.GetAxis("Mouse ScrollWheel"); // колесо: + вперёд, - назад
+        if (scroll != 0)
+        {
+            _camera.fieldOfView -= scroll * zoomSpeed;                      // меняем угол обзора
+            _camera.fieldOfView  = Mathf.Clamp(_camera.fieldOfView, minZoom, maxZoom); // зажимаем в пределах
+        }
+    }
+}
+```
