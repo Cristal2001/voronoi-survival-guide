@@ -119,6 +119,118 @@ float H(float x, float y) =>
 
 ### 🐾 Животные
 
+**Самый быстрый способ — один скрипт `AnimalAI.cs` на все типы:**
+> Вешать на префаб животного. Никакого NavMesh — просто Transform.MoveTowards.
+
+```csharp
+using UnityEngine;
+public class AnimalAI : MonoBehaviour
+{
+    public enum AnimalType { Neutral, Aggressive, Fish }
+
+    [SerializeField] private AnimalType _type        = AnimalType.Neutral;
+    [SerializeField] private float _hp               = 10f;
+    [SerializeField] private float _damage           = 2f;
+    [SerializeField] private float _moveSpeed        = 3f;
+    [SerializeField] private float _runSpeed         = 6f;
+    [SerializeField] private float _detectRange      = 10f;
+    [SerializeField] private float _attackRange      = 2f;
+    [SerializeField] private float _attackCooldown   = 1.5f;
+
+    private Transform _player;
+    private Vector3   _wanderTarget;
+    private float     _wanderTimer;
+    private float     _attackTimer;
+    private bool      _isDead;
+
+    private void Start()
+    {
+        var p = GameObject.FindGameObjectWithTag("Player");
+        if (p != null) _player = p.transform;
+        PickNewWanderTarget();
+    }
+
+    private void Update()
+    {
+        if (_isDead) return;
+        if (_type == AnimalType.Fish) { Wander(_moveSpeed); return; }
+
+        float dist = _player != null
+            ? Vector3.Distance(transform.position, _player.position) : float.MaxValue;
+
+        if (_type == AnimalType.Neutral)
+        {
+            if (dist < _detectRange) FleeFrom(_player.position);
+            else                     Wander(_moveSpeed);
+        }
+        else // Aggressive
+        {
+            if      (dist < _attackRange)  AttackPlayer();
+            else if (dist < _detectRange)  MoveTowards(_player.position, _runSpeed);
+            else                           Wander(_moveSpeed);
+        }
+    }
+
+    private void Wander(float speed)
+    {
+        _wanderTimer -= Time.deltaTime;
+        if (_wanderTimer <= 0f) PickNewWanderTarget();
+        MoveTowards(_wanderTarget, speed);
+    }
+
+    private void FleeFrom(Vector3 threat)
+    {
+        Vector3 dir = (transform.position - threat).normalized;
+        MoveTowards(transform.position + dir * 5f, _runSpeed);
+    }
+
+    private void AttackPlayer()
+    {
+        _attackTimer -= Time.deltaTime;
+        if (_attackTimer <= 0f)
+        {
+            _attackTimer = _attackCooldown;
+            _player.GetComponent<PlayerStats>()?.TakeDamage(_damage);
+        }
+    }
+
+    private void MoveTowards(Vector3 target, float speed)
+    {
+        Vector3 dir = target - transform.position; dir.y = 0f;
+        if (dir.magnitude < 0.1f) return;
+        transform.position += dir.normalized * speed * Time.deltaTime;
+        transform.rotation  = Quaternion.LookRotation(dir.normalized);
+    }
+
+    private void PickNewWanderTarget()
+    {
+        Vector2 r  = Random.insideUnitCircle * 10f;
+        _wanderTarget = transform.position + new Vector3(r.x, 0, r.y);
+        _wanderTimer  = Random.Range(3f, 7f);
+    }
+
+    public void TakeDamage(float dmg)
+    {
+        if (_isDead) return;
+        _hp -= dmg;
+        if (_type == AnimalType.Neutral && _player != null) FleeFrom(_player.position);
+        if (_hp <= 0f) { _isDead = true; Destroy(gameObject, 1f); }
+    }
+}
+```
+
+**Как настроить в инспекторе:**
+| Тип | AnimalType | HP | Damage | DetectRange | AttackRange |
+|-----|-----------|-----|--------|------------|------------|
+| Кролик | Neutral | 10 | 0 | 10 | — |
+| Волк | Aggressive | 40 | 8 | 10 | 2.5 |
+| Медведь | Aggressive | 100 | 20 | 12 | 3 |
+| Рыба | Fish | 5 | 0 | — | — |
+
+> ⚠️ На объекте Player должен быть тег **"Player"** (Inspector → Tag → Player)
+
+---
+
 **Нейтральные (убегают при атаке на 10м):**
 
 | Животное | HP | Урон | Дальность | Лут |
