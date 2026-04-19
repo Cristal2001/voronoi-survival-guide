@@ -248,6 +248,12 @@ public class AnimalMove : MonoBehaviour
     void Update()
     {
         transform.position = Vector3.MoveTowards(transform.position, _player.position, _speed * Time.deltaTime);
+
+        // Всегда смотрит на игрока
+        Vector3 direction = (_player.position - transform.position).normalized;
+        direction.y = 0f; // не наклоняться вверх-вниз
+        if (direction != Vector3.zero)
+            transform.rotation = Quaternion.LookRotation(direction);
     }
 }
 ```
